@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Prep Tracker — LGE • FMS • GHS Academic Coach</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Prep Tracker">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        lge: { DEFAULT: '#a855f7', light: '#c084fc', dark: '#7e22ce' }, // Purple
+                        fms: { DEFAULT: '#10b981', light: '#34d399', dark: '#047857' }, // Green
+                        ghs: { DEFAULT: '#f97316', light: '#fb923c', dark: '#c2410c' }, // Orange
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        /* iPhone Duo 5.4" Unopened Outer Display & Hallway Glance Optimizations */
+        @media (max-width: 440px) {
+            .duo-compact-hide {
+                display: none !important;
+            }
+            .duo-card-pad {
+                padding: 0.65rem 0.75rem !important;
+            }
+        }
+        body.hallway-mode #main-nav,
+        body.hallway-mode #desktop-control-bar,
+        body.hallway-mode #section-completed,
+        body.hallway-mode .coach-note-box {
+            display: none !important;
+        }
+        body.hallway-mode #container-on-prep {
+            grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+        }
+        body.hallway-mode .prep-card-title {
+            font-size: 1.05rem !important;
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-950 text-slate-100 flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- COMPACT APP HEADER (Tailored for iPhone Duo 5.4" outer screen width) -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-30 px-3 py-2.5 shadow-md">
+        <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 via-emerald-600 to-orange-500 flex items-center justify-center text-white shadow-lg shadow-indigo-950/50 font-bold shrink-0">
+                    <i class="fa-solid fa-graduation-cap text-xs"></i>
+                </div>
+                <div class="truncate">
+                    <h1 class="text-sm font-extrabold text-white tracking-tight flex items-center gap-1.5 truncate">
+                        Prep Tracker
+                        <span class="duo-compact-hide text-[10px] font-semibold bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">LGE • FMS • GHS</span>
+                    </h1>
+                    <p class="text-[10px] font-medium text-slate-400 truncate">Gonzales USD Coach</p>
+                </div>
+            </div>
+
+            <!-- Header Actions -->
+            <div class="flex items-center gap-1.5 shrink-0">
+                <!-- Hallway Mode Toggle (iPhone Duo Outer Display) -->
+                <button onclick="toggleHallwayMode()" id="btn-hallway" title="Toggle Hallway Glance Mode" class="flex items-center gap-1 bg-slate-950 border border-slate-800 hover:border-indigo-500/50 px-2 py-1.5 rounded-xl text-xs font-bold text-slate-300 transition">
+                    <i class="fa-solid fa-person-walking text-xs text-indigo-400"></i>
+                    <span id="hallway-btn-text" class="text-[11px]">Hallway</span>
+                </button>
+
+                <!-- Sync & Share Pill -->
+                <button onclick="openSyncModal()" title="Save & Sync Across Devices" class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 hover:border-emerald-500/50 px-2 py-1.5 rounded-xl text-xs font-semibold text-slate-300 transition">
+                    <span id="sync-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span id="sync-text" class="hidden sm:inline text-[11px]">Saved Locally</span>
+                    <i class="fa-solid fa-share-nodes text-[11px] text-emerald-400"></i>
+                </button>
+
+                <!-- Time Simulator Button -->
+                <button onclick="toggleSimulatorModal()" id="btn-simulator" title="Time Simulator Mode" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 hover:border-amber-500/50 text-slate-400 hover:text-amber-400 flex items-center justify-center transition">
+                    <i class="fa-solid fa-vial-flask text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN NAVIGATION TABS -->
+    <nav id="main-nav" class="bg-slate-900/95 backdrop-blur border-b border-slate-800 sticky top-[53px] z-20 px-2">
+        <div class="max-w-4xl mx-auto grid grid-cols-4">
+            <button onclick="switchView('prep')" id="tab-prep" class="py-2.5 text-[11px] sm:text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 flex items-center justify-center gap-1 transition">
+                <i class="fa-solid fa-clock"></i> <span>Prep</span>
+            </button>
+            <button onclick="switchView('lge')" id="tab-lge" class="py-2.5 text-[11px] sm:text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-purple-400 flex items-center justify-center gap-1 transition">
+                <i class="fa-solid fa-door-open text-purple-400"></i> <span>LGE</span>
+            </button>
+            <button onclick="switchView('roster')" id="tab-roster" class="py-2.5 text-[11px] sm:text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1 transition">
+                <i class="fa-solid fa-address-book"></i> <span>Roster (<span id="total-teacher-count">0</span>)</span>
+            </button>
+            <button onclick="switchView('schedules')" id="tab-schedules" class="py-2.5 text-[11px] sm:text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1 transition">
+                <i class="fa-solid fa-calendar-days"></i> <span>Bells</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-4xl w-full mx-auto p-2.5 sm:p-5 space-y-3.5 pb-24">
+
+        <!-- DESKTOP / UNFOLDED CONTROL BAR (Site Filter & Day Type) -->
+        <div id="desktop-control-bar" class="hidden sm:flex bg-slate-900 border border-slate-800 p-3 rounded-2xl flex-wrap items-center justify-between gap-3 shadow-sm">
+            <!-- School Site Filter Pills -->
+            <div class="flex items-center gap-1.5">
+                <span class="text-[11px] font-bold uppercase text-slate-500 mr-1">Site:</span>
+                <button onclick="setSchoolFilter('ALL')" id="filter-site-ALL" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition shadow-sm">All Sites</button>
+                <button onclick="setSchoolFilter('FMS')" id="filter-site-FMS" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 hover:text-emerald-400 border border-slate-800 hover:border-emerald-500/40 transition">Fairview (FMS)</button>
+                <button onclick="setSchoolFilter('GHS')" id="filter-site-GHS" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 hover:text-orange-400 border border-slate-800 hover:border-orange-500/40 transition">Gonzales (GHS)</button>
+            </div>
+
+            <!-- Day Type Selector (Regular vs Minimum Day) -->
+            <div class="flex items-center gap-2">
+                <span class="text-[11px] font-bold uppercase text-slate-500">Day Type:</span>
+                <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
+                    <button onclick="setDayType('regular')" id="daytype-regular" class="px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-white shadow-sm transition">Regular Day</button>
+                    <button onclick="setDayType('minimum')" id="daytype-minimum" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-amber-400 transition">Minimum Day</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 1: PREP DASHBOARD -->
+        <section id="view-prep" class="space-y-3.5">
+            <!-- Live Clock & Simulator Banner (Compact single-row on iPhone Duo outer screen) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-indigo-400 shrink-0">
+                        <i class="fa-regular fa-clock text-base"></i>
+                    </div>
+                    <div class="truncate">
+                        <div class="flex items-center gap-1.5">
+                            <span id="live-clock-display" class="text-base sm:text-lg font-black text-white tracking-tight">--:-- --</span>
+                            <span id="sim-badge" class="hidden text-[9px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded-full">SIM</span>
+                        </div>
+                        <p id="live-date-display" class="text-[11px] text-slate-400 font-medium truncate">Loading date...</p>
+                    </div>
+                </div>
+                <button id="btn-reset-sim" onclick="resetSimulator()" class="hidden text-[11px] font-bold bg-amber-600 hover:bg-amber-500 text-slate-950 px-2.5 py-1.5 rounded-xl transition shrink-0">
+                    Live Time
+                </button>
+            </div>
+
+            <!-- SECTION: ON PREP NOW -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider px-1">
+                    <span class="flex items-center gap-1.5 text-emerald-400">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        On Prep Now
+                    </span>
+                    <span id="count-on-prep" class="text-[11px] text-slate-500">0 teachers</span>
+                </div>
+                <div id="container-on-prep" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <!-- Active prep cards injected here -->
+                </div>
+            </div>
+
+            <!-- SECTION: SUBSEQUENT PREPS TODAY (GROUPED BY PERIOD) -->
+            <div class="space-y-2 pt-1">
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider px-1">
+                    <span class="flex items-center gap-1.5 text-indigo-400">
+                        <i class="fa-solid fa-forward-step text-[10px]"></i>
+                        Subsequent Preps Today
+                    </span>
+                </div>
+                <div id="container-up-next" class="space-y-2.5">
+                    <!-- Subsequent period cards injected here -->
+                </div>
+            </div>
+
+            <!-- SECTION: COMPLETED EARLIER TODAY -->
+            <div id="section-completed" class="space-y-2 pt-1">
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider px-1">
+                    <span>Completed Earlier</span>
+                    <span id="count-completed" class="text-[11px]">0</span>
+                </div>
+                <div id="container-completed" class="space-y-2 opacity-75">
+                    <!-- Completed period cards injected here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: LA GLORIA (LGE) CLASSROOM DIRECTORY -->
+        <section id="view-lge" class="hidden space-y-3.5">
+            <div class="bg-slate-900 border border-purple-500/30 rounded-2xl p-3.5 space-y-3 shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30">LGE</span>
+                            <h2 class="text-sm sm:text-base font-extrabold text-white">La Gloria Rooms</h2>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Quick room & grade lookup (No prep bells)</p>
+                    </div>
+                    <button onclick="openTeacherModal(null, 'LGE')" class="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white flex items-center gap-1.5 transition shadow-sm">
+                        <i class="fa-solid fa-plus"></i> Add LGE
+                    </button>
+                </div>
+
+                <!-- LGE Search Bar -->
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                    <input type="text" id="lge-search" oninput="renderLgeDirectory()" placeholder="Search La Gloria name, room #, or grade..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500">
+                </div>
+            </div>
+
+            <!-- LGE Directory Cards -->
+            <div id="lge-list-container" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <!-- Dynamic LGE Cards -->
+            </div>
+        </section>
+
+        <!-- VIEW 3: TEACHER ROSTER -->
+        <section id="view-roster" class="hidden space-y-3.5">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h2 class="text-sm sm:text-base font-extrabold text-white">Teacher Roster</h2>
+                        <p class="text-[11px] text-slate-400">Manage LGE, FMS, and GHS staff</p>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="openCsvModal()" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-200 flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-file-csv text-emerald-400"></i> Import CSV
+                        </button>
+                        <button onclick="openTeacherModal()" class="px-2.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white flex items-center gap-1.5 transition shadow-sm">
+                            <i class="fa-solid fa-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Site Sub-tabs for Roster -->
+                <div class="grid grid-cols-4 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-bold">
+                    <button onclick="setRosterSchoolTab('ALL')" id="roster-tab-ALL" class="py-1.5 rounded-lg transition bg-indigo-600 text-white">All</button>
+                    <button onclick="setRosterSchoolTab('LGE')" id="roster-tab-LGE" class="py-1.5 rounded-lg transition text-slate-400 hover:text-purple-400">LGE</button>
+                    <button onclick="setRosterSchoolTab('FMS')" id="roster-tab-FMS" class="py-1.5 rounded-lg transition text-slate-400 hover:text-emerald-400">FMS</button>
+                    <button onclick="setRosterSchoolTab('GHS')" id="roster-tab-GHS" class="py-1.5 rounded-lg transition text-slate-400 hover:text-orange-400">GHS</button>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                    <input type="text" id="roster-search" oninput="renderRosterList()" placeholder="Search teacher name, room, or subject..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                </div>
+            </div>
+
+            <!-- Roster List Container -->
+            <div id="roster-list-container" class="space-y-2">
+                <!-- Dynamic Teacher Cards -->
+            </div>
+        </section>
+
+        <!-- VIEW 4: BELL SCHEDULES -->
+        <section id="view-schedules" class="hidden space-y-3.5">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h2 class="text-sm sm:text-base font-extrabold text-white">Site Bell Schedules</h2>
+                        <p class="text-[11px] text-slate-400">Regular & Minimum day schedules</p>
+                    </div>
+                    <button onclick="resetSiteSchedules()" class="px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-[11px] font-bold text-slate-400 hover:text-white transition">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Reset Defaults
+                    </button>
+                </div>
+
+                <!-- School Tabs for Schedule -->
+                <div class="grid grid-cols-2 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-bold">
+                    <button onclick="setScheduleSchoolTab('FMS')" id="sched-tab-FMS" class="py-1.5 rounded-lg transition text-slate-400 hover:text-emerald-400">Fairview (FMS)</button>
+                    <button onclick="setScheduleSchoolTab('GHS')" id="sched-tab-GHS" class="py-1.5 rounded-lg transition bg-orange-600 text-white">Gonzales High (GHS)</button>
+                </div>
+            </div>
+
+            <div id="schedules-editor-container" class="space-y-3.5">
+                <!-- Dynamic schedules rendering -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOTTOM THUMB DOCK (iPhone Duo Outer Display & Mobile One-Handed Navigation) -->
+    <div id="mobile-thumb-dock" class="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-2.5 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-2xl">
+        <div class="flex items-center justify-between gap-1.5">
+            <!-- One-Handed Site Pills + LGE Rooms Shortcut -->
+            <div class="flex items-center gap-1 flex-1">
+                <button onclick="switchView('prep'); setSchoolFilter('ALL');" id="dock-site-ALL" class="flex-1 py-2 rounded-xl text-[11px] font-extrabold bg-indigo-600 text-white transition text-center">ALL</button>
+                <button onclick="switchView('lge')" id="dock-site-LGE" class="flex-1 py-2 rounded-xl text-[11px] font-extrabold bg-slate-950 text-purple-400 border border-purple-500/30 transition text-center">LGE</button>
+                <button onclick="switchView('prep'); setSchoolFilter('FMS');" id="dock-site-FMS" class="flex-1 py-2 rounded-xl text-[11px] font-extrabold bg-slate-950 text-slate-400 border border-slate-800 transition text-center">FMS</button>
+                <button onclick="switchView('prep'); setSchoolFilter('GHS');" id="dock-site-GHS" class="flex-1 py-2 rounded-xl text-[11px] font-extrabold bg-slate-950 text-slate-400 border border-slate-800 transition text-center">GHS</button>
+            </div>
+            <!-- Compact Day Type Toggle -->
+            <button onclick="toggleDayType()" id="dock-daytype-btn" class="px-2.5 py-2 rounded-xl text-[11px] font-extrabold bg-slate-800 text-white border border-slate-700 flex items-center gap-1 shrink-0">
+                <i class="fa-solid fa-calendar-day text-[10px] text-indigo-400"></i>
+                <span id="dock-daytype-label">Reg</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 1: ADD / EDIT TEACHER -->
+    <div id="modal-teacher" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 id="modal-teacher-title" class="text-sm font-extrabold text-white">Add Teacher</h3>
+                <button onclick="closeTeacherModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="form-teacher" onsubmit="saveTeacher(event)" class="space-y-3">
+                <input type="hidden" id="teacher-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Teacher Name *</label>
+                    <input type="text" id="teacher-name" required placeholder="e.g. Maria Garcia" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">School Site *</label>
+                        <select id="teacher-school" required onchange="updateTeacherPeriodOptions()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                            <option value="LGE">La Gloria Elem (LGE)</option>
+                            <option value="FMS">Fairview Middle (FMS)</option>
+                            <option value="GHS">Gonzales High (GHS)</option>
+                        </select>
+                    </div>
+                    <div id="teacher-prep-wrapper">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Prep Period</label>
+                        <select id="teacher-prep" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Room Number *</label>
+                        <input type="text" id="teacher-room" required placeholder="e.g. Rm 12" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Grade / Subject</label>
+                        <input type="text" id="teacher-subject" placeholder="e.g. 3rd Grade" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Coaching Notes (Optional)</label>
+                    <input type="text" id="teacher-notes" placeholder="e.g. Department chair, PLC Tuesdays" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeTeacherModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-300 hover:text-white">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white">Save Teacher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: DELETE CONFIRMATION -->
+    <div id="modal-delete" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex items-center gap-3 text-rose-400">
+                <div class="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center">
+                    <i class="fa-solid fa-trash-can"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-extrabold text-white">Remove Teacher?</h3>
+                    <p id="delete-teacher-name" class="text-xs text-slate-400">Are you sure?</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-300">Cancel</button>
+                <button onclick="confirmDeleteTeacher()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: CSV IMPORT -->
+    <div id="modal-csv" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-file-csv text-emerald-400"></i> Import Roster via CSV
+                </h3>
+                <button onclick="closeCsvModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-3">
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-200">Need a template?</p>
+                        <p class="text-[11px] text-slate-400">Download a ready-to-fill CSV file</p>
+                    </div>
+                    <button onclick="downloadCsvTemplate()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-indigo-400 transition">
+                        <i class="fa-solid fa-download mr-1"></i> Template
+                    </button>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Target School Site</label>
+                    <select id="csv-target-site" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                        <option value="AUTO">Auto-detect from CSV 'School' column</option>
+                        <option value="LGE">Force All to La Gloria Elem (LGE)</option>
+                        <option value="FMS">Force All to Fairview Middle (FMS)</option>
+                        <option value="GHS">Force All to Gonzales High (GHS)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Import Mode</label>
+                    <select id="csv-import-mode" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                        <option value="APPEND">Add to existing roster</option>
+                        <option value="REPLACE_SITE">Replace selected site's roster</option>
+                        <option value="REPLACE_ALL">Replace entire roster</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Select CSV File</label>
+                    <input type="file" id="csv-file-input" accept=".csv" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeCsvModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-300">Cancel</button>
+                <button onclick="processCsvImport()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white">Upload & Import</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: EDIT / ADD SCHEDULE PERIOD -->
+    <div id="modal-period" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 id="modal-period-title" class="text-sm font-extrabold text-white">Edit Period</h3>
+                <button onclick="closePeriodModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="savePeriod(event)" class="space-y-3">
+                <input type="hidden" id="period-day-type">
+                <input type="hidden" id="period-index">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Period Code *</label>
+                        <input type="text" id="period-id" required placeholder="e.g. P1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Display Name *</label>
+                        <input type="text" id="period-name" required placeholder="e.g. Period 1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Start Time *</label>
+                        <input type="time" id="period-start" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">End Time *</label>
+                        <input type="time" id="period-end" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+                    </div>
+                </div>
+                <div class="flex items-center justify-between pt-2">
+                    <button type="button" id="btn-delete-period" onclick="deletePeriod()" class="px-3 py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/50 text-xs font-bold text-rose-400">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="closePeriodModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-300">Cancel</button>
+                        <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white">Save</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: TIME SIMULATOR -->
+    <div id="modal-simulator" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-vial-flask text-amber-400"></i> Time Simulator
+                </h3>
+                <button onclick="toggleSimulatorModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-400">Test any time of day to preview who will be on prep at FMS and GHS.</p>
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Simulated Time</label>
+                <input type="time" id="sim-time-input" value="09:30" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm font-bold text-white">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="resetSimulator(); toggleSimulatorModal();" class="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-300">Use Live Time</button>
+                <button onclick="applySimulatedTime()" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-xs font-extrabold text-slate-950">Start Simulation</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: GITHUB PAGES & CROSS-DEVICE SYNC SHARE -->
+    <div id="modal-sync" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-mobile-screen-button text-indigo-400"></i> Save & Sync to iPhone
+                </h3>
+                <button onclick="closeSyncModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-xs text-slate-300">
+                <div class="bg-slate-950 border border-emerald-500/30 p-3 rounded-xl space-y-2">
+                    <p class="font-bold text-emerald-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-link"></i> 1-Tap Transfer Link (Computer → iPhone)
+                    </p>
+                    <p class="text-slate-400">Your roster is automatically saved in this browser. To transfer your entire staff roster to your iPhone (when hosted on GitHub Pages), copy this smart link and text/email it to yourself:</p>
+                    <button onclick="copySyncLink()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-extrabold text-white transition shadow-sm flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-copy"></i> Copy Sync Link with Roster Data
+                    </button>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-1.5">
+                    <p class="font-bold text-white">2. Add to iPhone Duo Home Screen</p>
+                    <p class="text-slate-400">Open your GitHub Pages link in Safari on your iPhone, tap <span class="text-white font-semibold">Share</span>, and select <span class="text-white font-semibold">Add to Home Screen</span> for full-screen app access on the outer display.</p>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-2">
+                    <p class="font-bold text-white">3. Local CSV Backup</p>
+                    <button onclick="exportRosterCsv()" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition">
+                        <i class="fa-solid fa-file-export mr-1"></i> Export Roster Backup (.CSV)
+                    </button>
+                </div>
+            </div>
+            <div class="flex justify-end pt-1">
+                <button onclick="closeSyncModal()" class="px-4 py-2 rounded-xl bg-indigo-600 text-xs font-bold text-white">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-800 border border-slate-700 text-white px-4 py-2.5 rounded-full text-xs font-bold shadow-2xl hidden items-center gap-2 transition-all">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-message">Saved!</span>
+    </div>
+
+    <!-- APPLICATION LOGIC (STANDALONE GITHUB PAGES + LOCALSTORAGE + URL HASH SYNC) -->
+    <script>
+        // --- CORE DEFAULT BELL SCHEDULES (GONZALES USD: FMS & GHS) ---
+        const DEFAULT_SCHEDULES = {
+            FMS: {
+                name: "Fairview Middle School",
+                badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+                regular: [
+                    { id: "P1", name: "Period 1", start: "08:15", end: "09:15" },
+                    { id: "P2", name: "Period 2", start: "09:19", end: "10:15" },
+                    { id: "P3", name: "Period 3", start: "10:30", end: "11:26" },
+                    { id: "P4", name: "Period 4", start: "11:30", end: "12:26" },
+                    { id: "P5", name: "Period 5", start: "13:05", end: "14:01" },
+                    { id: "P6", name: "Period 6", start: "14:05", end: "15:00" }
+                ],
+                minimum: [
+                    { id: "P1", name: "Period 1", start: "08:15", end: "08:58" },
+                    { id: "P2", name: "Period 2", start: "09:02", end: "09:44" },
+                    { id: "P3", name: "Period 3", start: "09:59", end: "10:41" },
+                    { id: "P4", name: "Period 4", start: "10:45", end: "11:27" },
+                    { id: "P5", name: "Period 5", start: "12:07", end: "12:49" },
+                    { id: "P6", name: "Period 6", start: "12:53", end: "13:36" }
+                ]
+            },
+            GHS: {
+                name: "Gonzales High School",
+                badgeColor: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+                regular: [
+                    { id: "P1", name: "Period 1", start: "08:00", end: "09:05" },
+                    { id: "P2", name: "Period 2", start: "09:10", end: "10:13" },
+                    { id: "P3", name: "Period 3", start: "10:28", end: "11:31" },
+                    { id: "P4", name: "Period 4", start: "11:36", end: "12:39" },
+                    { id: "P5", name: "Period 5", start: "13:19", end: "14:22" },
+                    { id: "P6", name: "Period 6", start: "14:27", end: "15:30" }
+                ],
+                minimum: [
+                    { id: "P1", name: "Period 1", start: "08:00", end: "08:50" },
+                    { id: "P2", name: "Period 2", start: "08:55", end: "09:43" },
+                    { id: "P3", name: "Period 3", start: "09:58", end: "10:46" },
+                    { id: "P4", name: "Period 4", start: "10:51", end: "11:39" },
+                    { id: "P5", name: "Period 5", start: "12:19", end: "13:07" },
+                    { id: "P6", name: "Period 6", start: "13:12", end: "14:00" }
+                ]
+            }
+        };
+
+        // --- SAMPLE INITIAL ROSTER DATA ---
+        const INITIAL_TEACHERS = [
+            { id: "t1", name: "Elena Morales", school: "LGE", prepPeriod: "NONE", room: "Rm 12", subject: "2nd Grade", notes: "Bilingual classroom" },
+            { id: "t2", name: "David Ramirez", school: "LGE", prepPeriod: "NONE", room: "Rm 18", subject: "4th Grade", notes: "" },
+            { id: "t3", name: "Sarah Jenkins", school: "LGE", prepPeriod: "NONE", room: "Rm 05", subject: "Kindergarten", notes: "North wing" },
+            { id: "t4", name: "Robert Chen", school: "FMS", prepPeriod: "P2", room: "Rm 102", subject: "7th Science", notes: "Prefers morning visits" },
+            { id: "t5", name: "Jennifer Lopez", school: "FMS", prepPeriod: "P4", room: "Rm 205", subject: "8th History", notes: "" },
+            { id: "t6", name: "James Wilson", school: "FMS", prepPeriod: "P6", room: "Rm 108", subject: "PE / Athletics", notes: "" },
+            { id: "t7", name: "Carlos Hernandez", school: "GHS", prepPeriod: "P1", room: "Rm 301", subject: "Algebra II", notes: "PLC Lead" },
+            { id: "t8", name: "Amanda Smith", school: "GHS", prepPeriod: "P2", room: "Rm 402", subject: "AP English", notes: "" },
+            { id: "t9", name: "Michael Torres", school: "GHS", prepPeriod: "P5", room: "Rm 115", subject: "Biology", notes: "" },
+            { id: "t10", name: "Lisa Davis", school: "GHS", prepPeriod: "P6", room: "Rm 210", subject: "US History", notes: "" }
+        ];
+
+        const STORAGE_KEY_TEACHERS = 'gonzales_prep_tracker_teachers_v1';
+        const STORAGE_KEY_SCHEDULES = 'gonzales_prep_tracker_schedules_v1';
+
+        // --- GLOBAL APP STATE ---
+        window.teachers = [...INITIAL_TEACHERS];
+        window.schedules = JSON.parse(JSON.stringify(DEFAULT_SCHEDULES));
+
+        window.activeView = 'prep';
+        window.schoolFilter = 'ALL';
+        window.dayType = 'regular';
+        window.rosterSchoolTab = 'ALL';
+        window.scheduleSchoolTab = 'GHS';
+        window.simulatedMinutes = null;
+        window.teacherToDeleteId = null;
+
+        // --- LOCALSTORAGE + URL SYNC PERSISTENCE (WORKS ON GITHUB PAGES) ---
+        function loadSavedState() {
+            try {
+                // 1. Check if incoming URL has #sync= payload (from Copy Sync Link)
+                if (window.location.hash && window.location.hash.startsWith('#sync=')) {
+                    const encoded = window.location.hash.slice(6);
+                    const decodedJson = decodeURIComponent(escape(atob(encoded)));
+                    const payload = JSON.parse(decodedJson);
+                    if (Array.isArray(payload.t)) {
+                        window.teachers = payload.t;
+                    }
+                    if (payload.s && payload.s.FMS && payload.s.GHS) {
+                        window.schedules = payload.s;
+                    }
+                    persistData();
+                    // Clean hash from URL bar after importing
+                    history.replaceState(null, '', window.location.pathname + window.location.search);
+                    setTimeout(() => window.showToast(`Loaded ${window.teachers.length} teachers from Sync Link!`), 400);
+                    return;
+                }
+
+                // 2. Otherwise load from persistent browser localStorage
+                const savedTeachers = localStorage.getItem(STORAGE_KEY_TEACHERS);
+                const savedSchedules = localStorage.getItem(STORAGE_KEY_SCHEDULES);
+                if (savedTeachers) {
+                    const parsed = JSON.parse(savedTeachers);
+                    if (Array.isArray(parsed)) window.teachers = parsed;
+                }
+                if (savedSchedules) {
+                    const parsedSched = JSON.parse(savedSchedules);
+                    if (parsedSched && parsedSched.FMS && parsedSched.GHS) window.schedules = parsedSched;
+                }
+            } catch (err) {
+                console.error('Error loading saved state:', err);
+            }
+        }
+
+        function persistData() {
+            document.getElementById('total-teacher-count').innerText = window.teachers.length;
+            try {
+                localStorage.setItem(STORAGE_KEY_TEACHERS, JSON.stringify(window.teachers));
+                localStorage.setItem(STORAGE_KEY_SCHEDULES, JSON.stringify(window.schedules));
+                const syncText = document.getElementById('sync-text');
+                if (syncText) syncText.innerText = 'Saved Locally';
+                return true;
+            } catch (err) {
+                console.error('Local save error:', err);
+                return false;
+            }
+        }
+
+        window.copySyncLink = function() {
+            try {
+                const payload = JSON.stringify({ t: window.teachers, s: window.schedules });
+                const encoded = btoa(unescape(encodeURIComponent(payload)));
+                const baseUrl = window.location.origin + window.location.pathname;
+                const syncUrl = `${baseUrl}#sync=${encoded}`;
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(syncUrl).then(() => {
+                        window.showToast('Sync Link copied! Paste & send to your iPhone');
+                    });
+                } else {
+                    const temp = document.createElement('textarea');
+                    temp.value = syncUrl;
+                    document.body.appendChild(temp);
+                    temp.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(temp);
+                    window.showToast('Sync Link copied! Paste & send to your iPhone');
+                }
+            } catch (err) {
+                console.error('Sync link error:', err);
+                window.showToast('Could not generate sync link—use CSV export instead');
+            }
+        };
+
+        // --- TIME & FORMATTING HELPERS ---
+        function parseTimeToMinutes(timeStr) {
+            if (!timeStr) return 0;
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        function formatTime12h(timeStr) {
+            if (!timeStr) return '';
+            const [h, m] = timeStr.split(':').map(Number);
+            const suffix = h >= 12 ? 'PM' : 'AM';
+            const hour12 = h % 12 || 12;
+            return `${hour12}:${String(m).padStart(2, '0')} ${suffix}`;
+        }
+
+        function getCurrentMinutes() {
+            if (window.simulatedMinutes !== null) return window.simulatedMinutes;
+            const now = new Date();
+            return now.getHours() * 60 + now.getMinutes();
+        }
+
+        function getSiteBadgeStyle(school) {
+            if (school === 'LGE') return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+            if (school === 'FMS') return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+            return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+        }
+
+        function getSiteBorderStyle(school) {
+            if (school === 'LGE') return 'border-purple-500/40';
+            if (school === 'FMS') return 'border-emerald-500/40';
+            return 'border-orange-500/40';
+        }
+
+        window.showToast = function(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('hidden');
+            toast.classList.add('flex');
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => {
+                toast.classList.add('hidden');
+                toast.classList.remove('flex');
+            }, 3200);
+        };
+
+        // --- NAVIGATION & FILTERS ---
+        window.switchView = function(view) {
+            window.activeView = view;
+            ['prep', 'lge', 'roster', 'schedules'].forEach(v => {
+                const sec = document.getElementById(`view-${v}`);
+                const tab = document.getElementById(`tab-${v}`);
+                if (v === view) {
+                    sec.classList.remove('hidden');
+                    tab.className = 'py-2.5 text-[11px] sm:text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 flex items-center justify-center gap-1 transition';
+                } else {
+                    sec.classList.add('hidden');
+                    tab.className = 'py-2.5 text-[11px] sm:text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1 transition';
+                }
+            });
+
+            // Sync bottom dock LGE button highlight
+            const dockLge = document.getElementById('dock-site-LGE');
+            if (dockLge) {
+                dockLge.className = view === 'lge'
+                    ? 'flex-1 py-2 rounded-xl text-[11px] font-extrabold bg-purple-600 text-white transition text-center'
+                    : 'flex-1 py-2 rounded-xl text-[11px] font-extrabold bg-slate-950 text-purple-400 border border-purple-500/30 transition text-center';
+            }
+
+            if (view === 'prep') window.renderPrepDashboard();
+            if (view === 'lge') window.renderLgeDirectory();
+            if (view === 'roster') window.renderRosterList();
+            if (view === 'schedules') window.renderSchedules();
+        };
+
+        window.setSchoolFilter = function(site) {
+            window.schoolFilter = site;
+            ['ALL', 'FMS', 'GHS'].forEach(s => {
+                const btn = document.getElementById(`filter-site-${s}`);
+                const dockBtn = document.getElementById(`dock-site-${s}`);
+                const isSelected = (s === site);
+                if (btn) {
+                    btn.className = isSelected
+                        ? 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition shadow-sm'
+                        : 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 hover:text-white border border-slate-800 transition';
+                }
+                if (dockBtn) {
+                    dockBtn.className = isSelected && window.activeView === 'prep'
+                        ? 'flex-1 py-2 rounded-xl text-[11px] font-extrabold bg-indigo-600 text-white transition text-center'
+                        : 'flex-1 py-2 rounded-xl text-[11px] font-extrabold bg-slate-950 text-slate-400 border border-slate-800 transition text-center';
+                }
+            });
+            window.renderPrepDashboard();
+        };
+
+        window.setDayType = function(type) {
+            window.dayType = type;
+            const regBtn = document.getElementById('daytype-regular');
+            const minBtn = document.getElementById('daytype-minimum');
+            const dockLabel = document.getElementById('dock-daytype-label');
+
+            if (type === 'regular') {
+                regBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-white shadow-sm transition';
+                minBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-amber-400 transition';
+                if (dockLabel) dockLabel.innerText = 'Reg';
+            } else {
+                minBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm transition';
+                regBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition';
+                if (dockLabel) dockLabel.innerText = 'Min';
+            }
+            window.renderPrepDashboard();
+        };
+
+        window.toggleDayType = function() {
+            window.setDayType(window.dayType === 'regular' ? 'minimum' : 'regular');
+            window.showToast(`Switched to ${window.dayType === 'regular' ? 'Regular Day' : 'Minimum Day'}`);
+        };
+
+        window.toggleHallwayMode = function() {
+            document.body.classList.toggle('hallway-mode');
+            const isActive = document.body.classList.contains('hallway-mode');
+            const btn = document.getElementById('btn-hallway');
+            const label = document.getElementById('hallway-btn-text');
+            if (isActive) {
+                window.switchView('prep');
+                btn.className = 'flex items-center gap-1 bg-indigo-600 border border-indigo-500 px-2 py-1.5 rounded-xl text-xs font-bold text-white transition';
+                label.innerText = 'Exit';
+            } else {
+                btn.className = 'flex items-center gap-1 bg-slate-950 border border-slate-800 hover:border-indigo-500/50 px-2 py-1.5 rounded-xl text-xs font-bold text-slate-300 transition';
+                label.innerText = 'Hallway';
+            }
+        };
+
+        // --- CLOCK & TIME SIMULATOR ---
+        function updateClockDisplay() {
+            const clockEl = document.getElementById('live-clock-display');
+            const dateEl = document.getElementById('live-date-display');
+            const simBadge = document.getElementById('sim-badge');
+            const resetBtn = document.getElementById('btn-reset-sim');
+            if (!clockEl) return;
+
+            const now = new Date();
+            dateEl.innerText = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+            if (window.simulatedMinutes !== null) {
+                const h = Math.floor(window.simulatedMinutes / 60);
+                const m = window.simulatedMinutes % 60;
+                const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                clockEl.innerText = formatTime12h(timeStr);
+                simBadge.classList.remove('hidden');
+                resetBtn.classList.remove('hidden');
+            } else {
+                clockEl.innerText = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                simBadge.classList.add('hidden');
+                resetBtn.classList.add('hidden');
+            }
+        }
+
+        window.toggleSimulatorModal = function() {
+            document.getElementById('modal-simulator').classList.toggle('hidden');
+        };
+
+        window.applySimulatedTime = function() {
+            const val = document.getElementById('sim-time-input').value;
+            if (val) {
+                window.simulatedMinutes = parseTimeToMinutes(val);
+                updateClockDisplay();
+                window.renderPrepDashboard();
+                window.toggleSimulatorModal();
+                window.showToast(`Simulating ${formatTime12h(val)}`);
+            }
+        };
+
+        window.resetSimulator = function() {
+            window.simulatedMinutes = null;
+            updateClockDisplay();
+            window.renderPrepDashboard();
+        };
+
+        // --- RENDER 1: PREP DASHBOARD ---
+        window.renderPrepDashboard = function() {
+            const nowMins = getCurrentMinutes();
+            const onPrep = [];
+            const upNextGroups = {};
+            const completedGroups = {};
+
+            const eligibleTeachers = window.teachers.filter(t => {
+                if (t.school === 'LGE' || t.prepPeriod === 'NONE') return false;
+                if (window.schoolFilter !== 'ALL' && t.school !== window.schoolFilter) return false;
+                return true;
+            });
+
+            eligibleTeachers.forEach(teacher => {
+                const siteSched = window.schedules[teacher.school]?.[window.dayType] || [];
+                const periodObj = siteSched.find(p => p.id === teacher.prepPeriod);
+                if (!periodObj) return;
+
+                const startMins = parseTimeToMinutes(periodObj.start);
+                const endMins = parseTimeToMinutes(periodObj.end);
+
+                if (nowMins >= startMins && nowMins < endMins) {
+                    onPrep.push({
+                        teacher,
+                        period: periodObj,
+                        minsLeft: endMins - nowMins
+                    });
+                } else if (nowMins < startMins) {
+                    const groupKey = `${periodObj.id}_${periodObj.name}`;
+                    if (!upNextGroups[groupKey]) {
+                        upNextGroups[groupKey] = {
+                            periodId: periodObj.id,
+                            periodName: periodObj.name,
+                            earliestStart: startMins,
+                            items: []
+                        };
+                    }
+                    upNextGroups[groupKey].earliestStart = Math.min(upNextGroups[groupKey].earliestStart, startMins);
+                    upNextGroups[groupKey].items.push({ teacher, period: periodObj, startMins });
+                } else {
+                    const groupKey = `${periodObj.id}_${periodObj.name}`;
+                    if (!completedGroups[groupKey]) {
+                        completedGroups[groupKey] = {
+                            periodName: periodObj.name,
+                            earliestStart: startMins,
+                            items: []
+                        };
+                    }
+                    completedGroups[groupKey].items.push({ teacher, period: periodObj });
+                }
+            });
+
+            // Render ON PREP NOW
+            const onPrepContainer = document.getElementById('container-on-prep');
+            document.getElementById('count-on-prep').innerText = `${onPrep.length} on prep`;
+
+            if (onPrep.length === 0) {
+                onPrepContainer.innerHTML = `
+                    <div class="col-span-full bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 text-center">
+                        <p class="text-xs font-bold text-slate-400">No teachers on prep right now</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Check subsequent periods below or use Time Simulator (<i class="fa-solid fa-vial-flask"></i>)</p>
+                    </div>`;
+            } else {
+                onPrepContainer.innerHTML = onPrep.map(({ teacher, period, minsLeft }) => `
+                    <div class="duo-card-pad bg-slate-900 border ${getSiteBorderStyle(teacher.school)} rounded-2xl p-3.5 shadow-sm flex flex-col justify-between gap-1.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-1.5 mb-0.5">
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold border ${getSiteBadgeStyle(teacher.school)}">${teacher.school}</span>
+                                    <span class="text-[11px] font-bold text-slate-400">${period.name}</span>
+                                </div>
+                                <h3 class="prep-card-title text-sm font-extrabold text-white leading-tight truncate">${teacher.name}</h3>
+                                <p class="text-[11px] text-slate-400 truncate">${teacher.subject || 'Staff'}</p>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="inline-block px-2 py-0.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-black text-white">${teacher.room || 'No Rm'}</span>
+                                <p class="text-[10px] font-bold text-emerald-400 mt-1">${minsLeft}m left</p>
+                            </div>
+                        </div>
+                        ${teacher.notes ? `<p class="coach-note-box text-[11px] text-slate-400 bg-slate-950/70 px-2 py-1 rounded-lg border border-slate-800/80 truncate"><i class="fa-regular fa-note-sticky mr-1 text-slate-500"></i>${teacher.notes}</p>` : ''}
+                    </div>
+                `).join('');
+            }
+
+            // Render SUBSEQUENT PREPS TODAY (Grouped by Period)
+            const upNextContainer = document.getElementById('container-up-next');
+            const sortedUpcoming = Object.values(upNextGroups).sort((a, b) => a.earliestStart - b.earliestStart);
+
+            if (sortedUpcoming.length === 0) {
+                upNextContainer.innerHTML = `
+                    <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-4 text-center text-xs text-slate-500">
+                        No remaining prep periods scheduled for today.
+                    </div>`;
+            } else {
+                upNextContainer.innerHTML = sortedUpcoming.map(group => {
+                    const minsUntil = group.earliestStart - nowMins;
+                    return `
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                            <div class="bg-slate-950/80 px-3 py-2 border-b border-slate-800 flex items-center justify-between">
+                                <span class="text-xs font-extrabold text-white">${group.periodName}</span>
+                                <span class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">In ${minsUntil}m</span>
+                            </div>
+                            <div class="divide-y divide-slate-800/60">
+                                ${group.items.map(({ teacher, period }) => `
+                                    <div class="px-3 py-2 flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold border shrink-0 ${getSiteBadgeStyle(teacher.school)}">${teacher.school}</span>
+                                            <div class="truncate">
+                                                <p class="text-xs font-bold text-slate-200 truncate">${teacher.name}</p>
+                                                <p class="text-[10px] text-slate-500 truncate">${formatTime12h(period.start)}–${formatTime12h(period.end)}${teacher.subject ? ' • ' + teacher.subject : ''}</p>
+                                            </div>
+                                        </div>
+                                        <span class="px-2 py-0.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-extrabold text-slate-300 shrink-0">${teacher.room || '—'}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Render COMPLETED EARLIER TODAY
+            const completedContainer = document.getElementById('container-completed');
+            const sortedCompleted = Object.values(completedGroups).sort((a, b) => a.earliestStart - b.earliestStart);
+            const totalCompletedCount = sortedCompleted.reduce((acc, g) => acc + g.items.length, 0);
+            document.getElementById('count-completed').innerText = totalCompletedCount;
+
+            if (sortedCompleted.length === 0) {
+                completedContainer.innerHTML = `<p class="text-xs text-slate-600 px-1">None yet today.</p>`;
+            } else {
+                completedContainer.innerHTML = sortedCompleted.map(group => `
+                    <div class="bg-slate-900/50 border border-slate-800/70 rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-1.5">
+                        <span class="text-xs font-bold text-slate-400">${group.periodName}</span>
+                        <div class="flex flex-wrap gap-1">
+                            ${group.items.map(({ teacher }) => `
+                                <span class="text-[10px] bg-slate-950 border border-slate-800 text-slate-400 px-1.5 py-0.5 rounded-lg">
+                                    <strong class="${teacher.school === 'FMS' ? 'text-emerald-400' : 'text-orange-400'}">${teacher.school}</strong> ${teacher.name} (${teacher.room || '—'})
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        };
+
+        // --- RENDER 2: LA GLORIA (LGE) DIRECTORY ---
+        window.renderLgeDirectory = function() {
+            const container = document.getElementById('lge-list-container');
+            const query = (document.getElementById('lge-search')?.value || '').toLowerCase();
+
+            const lgeTeachers = window.teachers
+                .filter(t => t.school === 'LGE')
+                .filter(t => !query || t.name.toLowerCase().includes(query) || (t.room || '').toLowerCase().includes(query) || (t.subject || '').toLowerCase().includes(query))
+                .sort((a, b) => (a.room || '').localeCompare(b.room || '', undefined, { numeric: true }));
+
+            if (lgeTeachers.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center space-y-2">
+                        <p class="text-xs font-bold text-slate-400">No La Gloria teachers found</p>
+                        <p class="text-[11px] text-slate-500">Add LGE staff individually or upload an LGE CSV file in the Roster tab.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = lgeTeachers.map(t => `
+                <div class="bg-slate-900 border border-purple-500/30 rounded-2xl p-3 flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-1.5">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-purple-500/20 text-purple-400 border border-purple-500/30 shrink-0">LGE</span>
+                            <span class="text-xs font-extrabold text-white truncate">${t.name}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5 truncate">${t.subject || 'Classroom Teacher'}${t.notes ? ' • ' + t.notes : ''}</p>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <span class="px-2.5 py-1 rounded-xl bg-purple-950/60 border border-purple-500/40 text-xs font-black text-purple-200">${t.room || 'No Rm'}</span>
+                        <button onclick="openTeacherModal('${t.id}')" class="w-7 h-7 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                            <i class="fa-solid fa-pen text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        // --- RENDER 3: TEACHER ROSTER ---
+        window.setRosterSchoolTab = function(site) {
+            window.rosterSchoolTab = site;
+            ['ALL', 'LGE', 'FMS', 'GHS'].forEach(s => {
+                const tab = document.getElementById(`roster-tab-${s}`);
+                if (!tab) return;
+                if (s === site) {
+                    const activeBg = s === 'LGE' ? 'bg-purple-600' : s === 'FMS' ? 'bg-emerald-600' : s === 'GHS' ? 'bg-orange-600' : 'bg-indigo-600';
+                    tab.className = `py-1.5 rounded-lg transition ${activeBg} text-white`;
+                } else {
+                    tab.className = 'py-1.5 rounded-lg transition text-slate-400 hover:text-white';
+                }
+            });
+            window.renderRosterList();
+        };
+
+        window.renderRosterList = function() {
+            const container = document.getElementById('roster-list-container');
+            const query = (document.getElementById('roster-search')?.value || '').toLowerCase();
+
+            const filtered = window.teachers.filter(t => {
+                if (window.rosterSchoolTab !== 'ALL' && t.school !== window.rosterSchoolTab) return false;
+                if (!query) return true;
+                return t.name.toLowerCase().includes(query) ||
+                       (t.room || '').toLowerCase().includes(query) ||
+                       (t.subject || '').toLowerCase().includes(query);
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center">
+                        <p class="text-xs font-bold text-slate-400">No teachers match this filter.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(t => {
+                const prepLabel = t.school === 'LGE' ? 'No Prep' : `Prep: ${t.prepPeriod}`;
+                return `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold border shrink-0 ${getSiteBadgeStyle(t.school)}">${t.school}</span>
+                                <h4 class="text-xs font-extrabold text-white truncate">${t.name}</h4>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-0.5 truncate">
+                                <span class="font-semibold text-slate-300">${t.room || 'No Room'}</span> • ${prepLabel}${t.subject ? ' • ' + t.subject : ''}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button onclick="openTeacherModal('${t.id}')" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 hover:border-indigo-500/50 text-slate-400 hover:text-white flex items-center justify-center transition">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                            <button onclick="promptDeleteTeacher('${t.id}')" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 hover:border-rose-500/50 text-slate-400 hover:text-rose-400 flex items-center justify-center transition">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        // --- TEACHER MODAL ACTIONS ---
+        window.updateTeacherPeriodOptions = function() {
+            const school = document.getElementById('teacher-school').value;
+            const prepWrapper = document.getElementById('teacher-prep-wrapper');
+            const prepSelect = document.getElementById('teacher-prep');
+
+            if (school === 'LGE') {
+                prepWrapper.classList.add('opacity-40', 'pointer-events-none');
+                prepSelect.innerHTML = `<option value="NONE">No Prep (Elementary)</option>`;
+            } else {
+                prepWrapper.classList.remove('opacity-40', 'pointer-events-none');
+                const periods = window.schedules[school]?.regular || [];
+                prepSelect.innerHTML = periods.map(p => `<option value="${p.id}">${p.name} (${p.id})</option>`).join('');
+            }
+        };
+
+        window.openTeacherModal = function(teacherId = null, defaultSchool = null) {
+            const modal = document.getElementById('modal-teacher');
+            const title = document.getElementById('modal-teacher-title');
+            document.getElementById('form-teacher').reset();
+
+            if (teacherId) {
+                const t = window.teachers.find(x => x.id === teacherId);
+                if (!t) return;
+                title.innerText = 'Edit Teacher';
+                document.getElementById('teacher-id').value = t.id;
+                document.getElementById('teacher-name').value = t.name;
+                document.getElementById('teacher-school').value = t.school;
+                window.updateTeacherPeriodOptions();
+                document.getElementById('teacher-prep').value = t.prepPeriod;
+                document.getElementById('teacher-room').value = t.room || '';
+                document.getElementById('teacher-subject').value = t.subject || '';
+                document.getElementById('teacher-notes').value = t.notes || '';
+            } else {
+                title.innerText = 'Add Teacher';
+                document.getElementById('teacher-id').value = '';
+                document.getElementById('teacher-school').value = defaultSchool || (window.rosterSchoolTab !== 'ALL' ? window.rosterSchoolTab : 'GHS');
+                window.updateTeacherPeriodOptions();
+            }
+            modal.classList.remove('hidden');
+        };
+
+        window.closeTeacherModal = function() {
+            document.getElementById('modal-teacher').classList.add('hidden');
+        };
+
+        window.saveTeacher = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('teacher-id').value;
+            const name = document.getElementById('teacher-name').value.trim();
+            const school = document.getElementById('teacher-school').value;
+            const prepPeriod = school === 'LGE' ? 'NONE' : document.getElementById('teacher-prep').value;
+            const room = document.getElementById('teacher-room').value.trim();
+            const subject = document.getElementById('teacher-subject').value.trim();
+            const notes = document.getElementById('teacher-notes').value.trim();
+
+            if (id) {
+                const idx = window.teachers.findIndex(t => t.id === id);
+                if (idx !== -1) {
+                    window.teachers[idx] = { id, name, school, prepPeriod, room, subject, notes };
+                }
+            } else {
+                window.teachers.push({
+                    id: 't_' + Date.now(),
+                    name,
+                    school,
+                    prepPeriod,
+                    room,
+                    subject,
+                    notes
+                });
+            }
+
+            persistData();
+            window.closeTeacherModal();
+            window.renderPrepDashboard();
+            window.renderLgeDirectory();
+            window.renderRosterList();
+            window.showToast('Teacher saved!');
+        };
+
+        window.promptDeleteTeacher = function(id) {
+            const t = window.teachers.find(x => x.id === id);
+            if (!t) return;
+            window.teacherToDeleteId = id;
+            document.getElementById('delete-teacher-name').innerText = `Remove ${t.name} (${t.school}) from roster?`;
+            document.getElementById('modal-delete').classList.remove('hidden');
+        };
+
+        window.closeDeleteModal = function() {
+            window.teacherToDeleteId = null;
+            document.getElementById('modal-delete').classList.add('hidden');
+        };
+
+        window.confirmDeleteTeacher = function() {
+            if (!window.teacherToDeleteId) return;
+            window.teachers = window.teachers.filter(t => t.id !== window.teacherToDeleteId);
+            persistData();
+            window.closeDeleteModal();
+            window.renderPrepDashboard();
+            window.renderLgeDirectory();
+            window.renderRosterList();
+            window.showToast('Teacher removed');
+        };
+
+        // --- CSV IMPORT & EXPORT ---
+        window.openCsvModal = function() {
+            document.getElementById('modal-csv').classList.remove('hidden');
+        };
+
+        window.closeCsvModal = function() {
+            document.getElementById('modal-csv').classList.add('hidden');
+        };
+
+        window.downloadCsvTemplate = function() {
+            const csvContent = "Name,School,Prep Period,Room,Subject,Notes\nJane Doe,GHS,P2,Rm 204,English 10,PLC Lead\nJohn Smith,FMS,P4,Rm 105,7th Math,\nMaria Elena,LGE,NONE,Rm 08,3rd Grade,Bilingual";
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'prep_tracker_template.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        window.exportRosterCsv = function() {
+            const rows = [['Name', 'School', 'Prep Period', 'Room', 'Subject', 'Notes']];
+            window.teachers.forEach(t => {
+                rows.push([
+                    `"${(t.name || '').replace(/"/g, '""')}"`,
+                    t.school,
+                    t.prepPeriod,
+                    `"${(t.room || '').replace(/"/g, '""')}"`,
+                    `"${(t.subject || '').replace(/"/g, '""')}"`,
+                    `"${(t.notes || '').replace(/"/g, '""')}"`
+                ]);
+            });
+            const csvString = rows.map(r => r.join(',')).join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `gonzales_roster_backup_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            window.showToast('Backup CSV downloaded');
+        };
+
+        window.processCsvImport = function() {
+            const fileInput = document.getElementById('csv-file-input');
+            const targetSite = document.getElementById('csv-target-site').value;
+            const mode = document.getElementById('csv-import-mode').value;
+
+            if (!fileInput.files || !fileInput.files[0]) {
+                window.showToast('Please select a CSV file first');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
+                if (lines.length < 2) {
+                    window.showToast('CSV file appears empty');
+                    return;
+                }
+
+                const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
+                const nameIdx = headers.findIndex(h => h.includes('name') || h.includes('teacher') || h.includes('staff'));
+                const schoolIdx = headers.findIndex(h => h.includes('school') || h.includes('site') || h.includes('campus'));
+                const prepIdx = headers.findIndex(h => h.includes('prep') || h.includes('period') || h.includes('block'));
+                const roomIdx = headers.findIndex(h => h.includes('room') || h.includes('location'));
+                const subjIdx = headers.findIndex(h => h.includes('subject') || h.includes('course') || h.includes('grade'));
+                const notesIdx = headers.findIndex(h => h.includes('note'));
+
+                const imported = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = lines[i].split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
+                    const name = nameIdx !== -1 ? cols[nameIdx] : cols[0];
+                    if (!name) continue;
+
+                    let school = targetSite !== 'AUTO' ? targetSite : (schoolIdx !== -1 ? (cols[schoolIdx] || '').toUpperCase() : 'GHS');
+                    if (school.includes('GLORIA') || school.includes('LGE')) school = 'LGE';
+                    else if (school.includes('FAIRVIEW') || school.includes('FMS')) school = 'FMS';
+                    else school = 'GHS';
+
+                    let prep = 'NONE';
+                    if (school !== 'LGE') {
+                        prep = prepIdx !== -1 ? (cols[prepIdx] || 'P1').toUpperCase() : 'P1';
+                        const numMatch = prep.match(/\d+/);
+                        if (numMatch) prep = 'P' + numMatch[0];
+                    }
+
+                    imported.push({
+                        id: 't_csv_' + Date.now() + '_' + i,
+                        name,
+                        school,
+                        prepPeriod: prep,
+                        room: roomIdx !== -1 ? (cols[roomIdx] || '') : '',
+                        subject: subjIdx !== -1 ? (cols[subjIdx] || '') : '',
+                        notes: notesIdx !== -1 ? (cols[notesIdx] || '') : ''
+                    });
+                }
+
+                if (mode === 'REPLACE_ALL') {
+                    window.teachers = imported;
+                } else if (mode === 'REPLACE_SITE' && targetSite !== 'AUTO') {
+                    window.teachers = window.teachers.filter(t => t.school !== targetSite).concat(imported);
+                } else {
+                    window.teachers = window.teachers.concat(imported);
+                }
+
+                persistData();
+                fileInput.value = '';
+                window.closeCsvModal();
+                window.renderLgeDirectory();
+                window.renderRosterList();
+                window.renderPrepDashboard();
+                window.showToast(`Imported & saved ${imported.length} teachers!`);
+            };
+            reader.readAsText(fileInput.files[0]);
+        };
+
+        // --- RENDER 4: BELL SCHEDULES EDITOR ---
+        window.setScheduleSchoolTab = function(site) {
+            window.scheduleSchoolTab = site;
+            const fmsTab = document.getElementById('sched-tab-FMS');
+            const ghsTab = document.getElementById('sched-tab-GHS');
+            if (site === 'FMS') {
+                fmsTab.className = 'py-1.5 rounded-lg transition bg-emerald-600 text-white';
+                ghsTab.className = 'py-1.5 rounded-lg transition text-slate-400 hover:text-orange-400';
+            } else {
+                ghsTab.className = 'py-1.5 rounded-lg transition bg-orange-600 text-white';
+                fmsTab.className = 'py-1.5 rounded-lg transition text-slate-400 hover:text-emerald-400';
+            }
+            window.renderSchedules();
+        };
+
+        window.renderSchedules = function() {
+            const container = document.getElementById('schedules-editor-container');
+            const site = window.scheduleSchoolTab;
+            const siteData = window.schedules[site];
+            if (!siteData) return;
+
+            const renderDayBlock = (dayKey, label) => {
+                const periods = siteData[dayKey] || [];
+                return `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                        <div class="bg-slate-950/70 px-3.5 py-2.5 border-b border-slate-800 flex items-center justify-between">
+                            <h3 class="text-xs font-extrabold uppercase tracking-wider text-white">${label}</h3>
+                            <button onclick="openPeriodModal('${dayKey}', -1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-indigo-400 transition">
+                                <i class="fa-solid fa-plus mr-1"></i> Add
+                            </button>
+                        </div>
+                        <div class="divide-y divide-slate-800/70">
+                            ${periods.map((p, idx) => `
+                                <div onclick="openPeriodModal('${dayKey}', ${idx})" class="px-3.5 py-2.5 flex items-center justify-between hover:bg-slate-800/40 cursor-pointer transition">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-[11px] font-extrabold text-slate-300">${p.id}</span>
+                                        <span class="text-xs font-bold text-white">${p.name}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400">
+                                        <span>${formatTime12h(p.start)} – ${formatTime12h(p.end)}</span>
+                                        <i class="fa-solid fa-chevron-right text-[10px] text-slate-600"></i>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            };
+
+            container.innerHTML = renderDayBlock('regular', 'Regular Day Bell Schedule') + renderDayBlock('minimum', 'Minimum Day Bell Schedule');
+        };
+
+        window.openPeriodModal = function(dayKey, index) {
+            const site = window.scheduleSchoolTab;
+            document.getElementById('period-day-type').value = dayKey;
+            document.getElementById('period-index').value = index;
+            const deleteBtn = document.getElementById('btn-delete-period');
+
+            if (index >= 0) {
+                const p = window.schedules[site][dayKey][index];
+                document.getElementById('modal-period-title').innerText = `Edit ${p.name} (${site})`;
+                document.getElementById('period-id').value = p.id;
+                document.getElementById('period-name').value = p.name;
+                document.getElementById('period-start').value = p.start;
+                document.getElementById('period-end').value = p.end;
+                deleteBtn.classList.remove('hidden');
+            } else {
+                const nextNum = window.schedules[site][dayKey].length + 1;
+                document.getElementById('modal-period-title').innerText = `Add Period (${site})`;
+                document.getElementById('period-id').value = `P${nextNum}`;
+                document.getElementById('period-name').value = `Period ${nextNum}`;
+                document.getElementById('period-start').value = '08:00';
+                document.getElementById('period-end').value = '09:00';
+                deleteBtn.classList.add('hidden');
+            }
+            document.getElementById('modal-period').classList.remove('hidden');
+        };
+
+        window.closePeriodModal = function() {
+            document.getElementById('modal-period').classList.add('hidden');
+        };
+
+        window.savePeriod = function(e) {
+            e.preventDefault();
+            const site = window.scheduleSchoolTab;
+            const dayKey = document.getElementById('period-day-type').value;
+            const index = parseInt(document.getElementById('period-index').value, 10);
+
+            const newPeriod = {
+                id: document.getElementById('period-id').value.trim().toUpperCase(),
+                name: document.getElementById('period-name').value.trim(),
+                start: document.getElementById('period-start').value,
+                end: document.getElementById('period-end').value
+            };
+
+            if (index >= 0) {
+                window.schedules[site][dayKey][index] = newPeriod;
+            } else {
+                window.schedules[site][dayKey].push(newPeriod);
+            }
+
+            persistData();
+            window.closePeriodModal();
+            window.renderSchedules();
+            window.renderPrepDashboard();
+            window.showToast('Schedule updated');
+        };
+
+        window.deletePeriod = function() {
+            const site = window.scheduleSchoolTab;
+            const dayKey = document.getElementById('period-day-type').value;
+            const index = parseInt(document.getElementById('period-index').value, 10);
+            if (index >= 0) {
+                window.schedules[site][dayKey].splice(index, 1);
+                persistData();
+                window.closePeriodModal();
+                window.renderSchedules();
+                window.renderPrepDashboard();
+                window.showToast('Period deleted');
+            }
+        };
+
+        window.resetSiteSchedules = function() {
+            const site = window.scheduleSchoolTab;
+            window.schedules[site] = JSON.parse(JSON.stringify(DEFAULT_SCHEDULES[site]));
+            persistData();
+            window.renderSchedules();
+            window.renderPrepDashboard();
+            window.showToast(`Restored default ${site} bell schedule`);
+        };
+
+        window.openSyncModal = function() {
+            document.getElementById('modal-sync').classList.remove('hidden');
+        };
+
+        window.closeSyncModal = function() {
+            document.getElementById('modal-sync').classList.add('hidden');
+        };
+
+        // --- INITIALIZATION ---
+        loadSavedState();
+        document.getElementById('total-teacher-count').innerText = window.teachers.length;
+        updateClockDisplay();
+        window.renderPrepDashboard();
+        window.renderLgeDirectory();
+        window.renderRosterList();
+        window.renderSchedules();
+
+        setInterval(() => {
+            updateClockDisplay();
+            if (window.activeView === 'prep') {
+                window.renderPrepDashboard();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
