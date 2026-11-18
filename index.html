@@ -92,11 +92,11 @@
                     <span id="hallway-btn-text" class="text-[11px]">Hallway</span>
                 </button>
 
-                <!-- Sync & Share Pill -->
-                <button onclick="openSyncModal()" title="Save & Sync Across Devices" class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 hover:border-emerald-500/50 px-2 py-1.5 rounded-xl text-xs font-semibold text-slate-300 transition">
+                <!-- Sync & Permanent Save Pill -->
+                <button onclick="openSyncModal()" title="Permanent Save & Sync Options" class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 hover:border-emerald-500/50 px-2 py-1.5 rounded-xl text-xs font-semibold text-slate-300 transition">
                     <span id="sync-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span id="sync-text" class="hidden sm:inline text-[11px]">Saved Locally</span>
-                    <i class="fa-solid fa-share-nodes text-[11px] text-emerald-400"></i>
+                    <span id="sync-text" class="hidden sm:inline text-[11px]">Saved</span>
+                    <i class="fa-solid fa-cloud-arrow-down text-[11px] text-emerald-400"></i>
                 </button>
 
                 <!-- Time Simulator Button -->
@@ -508,40 +508,54 @@
         </div>
     </div>
 
-    <!-- MODAL 6: GITHUB PAGES & CROSS-DEVICE SYNC SHARE -->
+    <!-- MODAL 6: PERMANENT ROSTER LOCK & SYNC -->
     <div id="modal-sync" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-3.5 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-mobile-screen-button text-indigo-400"></i> Save & Sync to iPhone
+                    <i class="fa-solid fa-shield-halved text-emerald-400"></i> Make Roster 100% Permanent
                 </h3>
                 <button onclick="closeSyncModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="space-y-3 text-xs text-slate-300">
-                <div class="bg-slate-950 border border-emerald-500/30 p-3 rounded-xl space-y-2">
-                    <p class="font-bold text-emerald-400 flex items-center gap-1.5">
-                        <i class="fa-solid fa-link"></i> 1-Tap Transfer Link (Computer → iPhone)
-                    </p>
-                    <p class="text-slate-400">Your roster is automatically saved in this browser. To transfer your entire staff roster to your iPhone (when hosted on GitHub Pages), copy this smart link and text/email it to yourself:</p>
-                    <button onclick="copySyncLink()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-extrabold text-white transition shadow-sm flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-copy"></i> Copy Sync Link with Roster Data
+                <!-- BEST OPTION FOR GITHUB PAGES -->
+                <div class="bg-slate-950 border border-indigo-500/40 p-3.5 rounded-xl space-y-2">
+                    <div class="flex items-center justify-between">
+                        <p class="font-extrabold text-indigo-400 flex items-center gap-1.5">
+                            <i class="fa-brands fa-github"></i> Option A: Bake Roster into index.html (Best!)
+                        </p>
+                        <span class="text-[10px] font-bold bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full">Never Clears</span>
+                    </div>
+                    <p class="text-slate-400 leading-relaxed">iOS Safari occasionally clears browser storage on bookmarked sites. Click below to download a new <code class="text-white">index.html</code> with your <strong class="text-white"><span id="modal-teacher-count">0</span> teachers permanently built in</strong>, then replace <code class="text-white">index.html</code> in your GitHub repo:</p>
+                    <button onclick="downloadBakedHtml()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-extrabold text-white transition shadow-sm flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-file-code"></i> Download index.html with My Roster
                     </button>
                 </div>
 
-                <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-1.5">
-                    <p class="font-bold text-white">2. Add to iPhone Duo Home Screen</p>
-                    <p class="text-slate-400">Open your GitHub Pages link in Safari on your iPhone, tap <span class="text-white font-semibold">Share</span>, and select <span class="text-white font-semibold">Add to Home Screen</span> for full-screen app access on the outer display.</p>
+                <!-- INSTANT PHONE TRANSFER LINK -->
+                <div class="bg-slate-950 border border-emerald-500/30 p-3.5 rounded-xl space-y-2">
+                    <p class="font-bold text-emerald-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-link"></i> Option B: 1-Tap Transfer Link (Computer → iPhone)
+                    </p>
+                    <p class="text-slate-400 leading-relaxed">Copy this link, open it in <strong class="text-white">Safari on your iPhone</strong>, and tap <strong class="text-white">Share → Add to Home Screen</strong> *after* the page loads:</p>
+                    <button onclick="copySyncLink()" class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-extrabold text-white transition shadow-sm flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-copy"></i> Copy Sync Link
+                    </button>
                 </div>
 
-                <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-2">
-                    <p class="font-bold text-white">3. Local CSV Backup</p>
-                    <button onclick="exportRosterCsv()" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition">
-                        <i class="fa-solid fa-file-export mr-1"></i> Export Roster Backup (.CSV)
+                <!-- CSV BACKUP -->
+                <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between gap-2">
+                    <div>
+                        <p class="font-bold text-white">Local CSV Backup</p>
+                        <p class="text-[11px] text-slate-400">Save a spreadsheet copy</p>
+                    </div>
+                    <button onclick="exportRosterCsv()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition shrink-0">
+                        <i class="fa-solid fa-file-export mr-1"></i> Export CSV
                     </button>
                 </div>
             </div>
             <div class="flex justify-end pt-1">
-                <button onclick="closeSyncModal()" class="px-4 py-2 rounded-xl bg-indigo-600 text-xs font-bold text-white">Done</button>
+                <button onclick="closeSyncModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">Close</button>
             </div>
         </div>
     </div>
@@ -552,10 +566,10 @@
         <span id="toast-message">Saved!</span>
     </div>
 
-    <!-- APPLICATION LOGIC (STANDALONE GITHUB PAGES + LOCALSTORAGE + URL HASH SYNC) -->
+    <!-- APPLICATION LOGIC (INDEXEDDB + LOCALSTORAGE + BAKED HTML EXPORT) -->
     <script>
         // --- CORE DEFAULT BELL SCHEDULES (GONZALES USD: FMS & GHS) ---
-        const DEFAULT_SCHEDULES = {
+        const DEFAULT_SCHEDULES = /*BAKED_SCHEDULES_START*/{
             FMS: {
                 name: "Fairview Middle School",
                 badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
@@ -596,10 +610,10 @@
                     { id: "P6", name: "Period 6", start: "13:12", end: "14:00" }
                 ]
             }
-        };
+        }/*BAKED_SCHEDULES_END*/;
 
-        // --- SAMPLE INITIAL ROSTER DATA ---
-        const INITIAL_TEACHERS = [
+        // --- INITIAL / BAKED ROSTER DATA ---
+        const INITIAL_TEACHERS = /*BAKED_TEACHERS_START*/[
             { id: "t1", name: "Elena Morales", school: "LGE", prepPeriod: "NONE", room: "Rm 12", subject: "2nd Grade", notes: "Bilingual classroom" },
             { id: "t2", name: "David Ramirez", school: "LGE", prepPeriod: "NONE", room: "Rm 18", subject: "4th Grade", notes: "" },
             { id: "t3", name: "Sarah Jenkins", school: "LGE", prepPeriod: "NONE", room: "Rm 05", subject: "Kindergarten", notes: "North wing" },
@@ -610,10 +624,12 @@
             { id: "t8", name: "Amanda Smith", school: "GHS", prepPeriod: "P2", room: "Rm 402", subject: "AP English", notes: "" },
             { id: "t9", name: "Michael Torres", school: "GHS", prepPeriod: "P5", room: "Rm 115", subject: "Biology", notes: "" },
             { id: "t10", name: "Lisa Davis", school: "GHS", prepPeriod: "P6", room: "Rm 210", subject: "US History", notes: "" }
-        ];
+        ]/*BAKED_TEACHERS_END*/;
 
-        const STORAGE_KEY_TEACHERS = 'gonzales_prep_tracker_teachers_v1';
-        const STORAGE_KEY_SCHEDULES = 'gonzales_prep_tracker_schedules_v1';
+        const STORAGE_KEY_TEACHERS = 'gonzales_prep_tracker_teachers_v2';
+        const STORAGE_KEY_SCHEDULES = 'gonzales_prep_tracker_schedules_v2';
+        const IDB_NAME = 'GonzalesPrepTrackerDB';
+        const IDB_STORE = 'appState';
 
         // --- GLOBAL APP STATE ---
         window.teachers = [...INITIAL_TEACHERS];
@@ -627,10 +643,68 @@
         window.simulatedMinutes = null;
         window.teacherToDeleteId = null;
 
-        // --- LOCALSTORAGE + URL SYNC PERSISTENCE (WORKS ON GITHUB PAGES) ---
-        function loadSavedState() {
+        // --- REQUEST PERSISTENT STORAGE FROM IOS SAFARI ---
+        if (navigator.storage && navigator.storage.persist) {
+            navigator.storage.persist().catch(() => {});
+        }
+
+        // --- INDEXEDDB HELPERS (SURVIVES IOS SAFARI CACHE EVICTION) ---
+        function openDb() {
+            return new Promise((resolve, reject) => {
+                if (!window.indexedDB) return reject('No IndexedDB');
+                const req = indexedDB.open(IDB_NAME, 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(IDB_STORE)) {
+                        db.createObjectStore(IDB_STORE);
+                    }
+                };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function saveToIndexedDB(teachersData, schedulesData) {
             try {
-                // 1. Check if incoming URL has #sync= payload (from Copy Sync Link)
+                const db = await openDb();
+                return new Promise((resolve) => {
+                    const tx = db.transaction(IDB_STORE, 'readwrite');
+                    const store = tx.objectStore(IDB_STORE);
+                    store.put(teachersData, 'teachers');
+                    store.put(schedulesData, 'schedules');
+                    tx.oncomplete = () => resolve(true);
+                    tx.onerror = () => resolve(false);
+                });
+            } catch (e) {
+                return false;
+            }
+        }
+
+        async function loadFromIndexedDB() {
+            try {
+                const db = await openDb();
+                return new Promise((resolve) => {
+                    const tx = db.transaction(IDB_STORE, 'readonly');
+                    const store = tx.objectStore(IDB_STORE);
+                    const tReq = store.get('teachers');
+                    const sReq = store.get('schedules');
+                    tx.oncomplete = () => {
+                        resolve({
+                            teachers: Array.isArray(tReq.result) ? tReq.result : null,
+                            schedules: (sReq.result && sReq.result.FMS && sReq.result.GHS) ? sReq.result : null
+                        });
+                    };
+                    tx.onerror = () => resolve({ teachers: null, schedules: null });
+                });
+            } catch (e) {
+                return { teachers: null, schedules: null };
+            }
+        }
+
+        // --- TRIPLE-LAYER STATE LOADER & SAVER ---
+        async function loadSavedState() {
+            try {
+                // 1. Check incoming URL hash (#sync=...) first
                 if (window.location.hash && window.location.hash.startsWith('#sync=')) {
                     const encoded = window.location.hash.slice(6);
                     const decodedJson = decodeURIComponent(escape(atob(encoded)));
@@ -641,42 +715,100 @@
                     if (payload.s && payload.s.FMS && payload.s.GHS) {
                         window.schedules = payload.s;
                     }
-                    persistData();
-                    // Clean hash from URL bar after importing
+                    await persistData();
+                    // Strip #sync= so bookmarking saves the clean URL, not a stale hash
                     history.replaceState(null, '', window.location.pathname + window.location.search);
-                    setTimeout(() => window.showToast(`Loaded ${window.teachers.length} teachers from Sync Link!`), 400);
+                    refreshAllViews();
+                    setTimeout(() => window.showToast(`Locked in ${window.teachers.length} teachers on this device!`), 350);
                     return;
                 }
 
-                // 2. Otherwise load from persistent browser localStorage
-                const savedTeachers = localStorage.getItem(STORAGE_KEY_TEACHERS);
-                const savedSchedules = localStorage.getItem(STORAGE_KEY_SCHEDULES);
+                // 2. Check IndexedDB (most durable on iOS)
+                const idbData = await loadFromIndexedDB();
+                if (idbData.teachers && idbData.teachers.length > 0) {
+                    window.teachers = idbData.teachers;
+                    if (idbData.schedules) window.schedules = idbData.schedules;
+                    localStorage.setItem(STORAGE_KEY_TEACHERS, JSON.stringify(window.teachers));
+                    localStorage.setItem(STORAGE_KEY_SCHEDULES, JSON.stringify(window.schedules));
+                    refreshAllViews();
+                    return;
+                }
+
+                // 3. Fallback to localStorage (or v1 keys if upgrading)
+                const savedTeachers = localStorage.getItem(STORAGE_KEY_TEACHERS) || localStorage.getItem('gonzales_prep_tracker_teachers_v1');
+                const savedSchedules = localStorage.getItem(STORAGE_KEY_SCHEDULES) || localStorage.getItem('gonzales_prep_tracker_schedules_v1');
                 if (savedTeachers) {
                     const parsed = JSON.parse(savedTeachers);
-                    if (Array.isArray(parsed)) window.teachers = parsed;
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        window.teachers = parsed;
+                        await saveToIndexedDB(window.teachers, window.schedules);
+                    }
                 }
                 if (savedSchedules) {
                     const parsedSched = JSON.parse(savedSchedules);
-                    if (parsedSched && parsedSched.FMS && parsedSched.GHS) window.schedules = parsedSched;
+                    if (parsedSched && parsedSched.FMS && parsedSched.GHS) {
+                        window.schedules = parsedSched;
+                    }
                 }
+                refreshAllViews();
             } catch (err) {
                 console.error('Error loading saved state:', err);
             }
         }
 
-        function persistData() {
+        async function persistData() {
             document.getElementById('total-teacher-count').innerText = window.teachers.length;
+            const modalCount = document.getElementById('modal-teacher-count');
+            if (modalCount) modalCount.innerText = window.teachers.length;
+
             try {
                 localStorage.setItem(STORAGE_KEY_TEACHERS, JSON.stringify(window.teachers));
                 localStorage.setItem(STORAGE_KEY_SCHEDULES, JSON.stringify(window.schedules));
-                const syncText = document.getElementById('sync-text');
-                if (syncText) syncText.innerText = 'Saved Locally';
-                return true;
-            } catch (err) {
-                console.error('Local save error:', err);
-                return false;
-            }
+            } catch (e) {}
+
+            await saveToIndexedDB(window.teachers, window.schedules);
+            const syncText = document.getElementById('sync-text');
+            if (syncText) syncText.innerText = 'Saved';
+            return true;
         }
+
+        function refreshAllViews() {
+            document.getElementById('total-teacher-count').innerText = window.teachers.length;
+            const modalCount = document.getElementById('modal-teacher-count');
+            if (modalCount) modalCount.innerText = window.teachers.length;
+            window.renderPrepDashboard();
+            window.renderLgeDirectory();
+            window.renderRosterList();
+            window.renderSchedules();
+        }
+
+        // --- BAKE ROSTER DIRECTLY INTO DOWNLOADABLE INDEX.HTML ---
+        window.downloadBakedHtml = function() {
+            try {
+                let fullHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+                const bakedSchedulesStr = `/*BAKED_SCHEDULES_START*/${JSON.stringify(window.schedules, null, 4)}/*BAKED_SCHEDULES_END*/`;
+                const bakedTeachersStr = `/*BAKED_TEACHERS_START*/${JSON.stringify(window.teachers, null, 4)}/*BAKED_TEACHERS_END*/`;
+
+                fullHtml = fullHtml.replace(/\/\*BAKED_SCHEDULES_START\*\/[\s\S]*?\/\*BAKED_SCHEDULES_END\*\//, bakedSchedulesStr);
+                fullHtml = fullHtml.replace(/\/\*BAKED_TEACHERS_START\*\/[\s\S]*?\/\*BAKED_TEACHERS_END\*\//, bakedTeachersStr);
+
+                // Reset dynamic DOM state inside exported file so it loads cleanly on startup
+                fullHtml = fullHtml.replace(/id="modal-sync" class="[^"]*"/, 'id="modal-sync" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4"');
+
+                const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'index.html';
+                a.click();
+                URL.revokeObjectURL(url);
+                window.showToast(`Downloaded index.html with ${window.teachers.length} teachers baked in!`);
+            } catch (err) {
+                console.error('Export HTML error:', err);
+                window.showToast('Could not generate index.html');
+            }
+        };
 
         window.copySyncLink = function() {
             try {
@@ -687,7 +819,7 @@
 
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(syncUrl).then(() => {
-                        window.showToast('Sync Link copied! Paste & send to your iPhone');
+                        window.showToast('Sync Link copied! Open in iPhone Safari, then Add to Home Screen');
                     });
                 } else {
                     const temp = document.createElement('textarea');
@@ -696,11 +828,11 @@
                     temp.select();
                     document.execCommand('copy');
                     document.body.removeChild(temp);
-                    window.showToast('Sync Link copied! Paste & send to your iPhone');
+                    window.showToast('Sync Link copied! Open in iPhone Safari, then Add to Home Screen');
                 }
             } catch (err) {
                 console.error('Sync link error:', err);
-                window.showToast('Could not generate sync link—use CSV export instead');
+                window.showToast('Could not generate sync link—use Bake index.html instead');
             }
         };
 
@@ -746,7 +878,7 @@
             window._toastTimer = setTimeout(() => {
                 toast.classList.add('hidden');
                 toast.classList.remove('flex');
-            }, 3200);
+            }, 3500);
         };
 
         // --- NAVIGATION & FILTERS ---
@@ -764,7 +896,6 @@
                 }
             });
 
-            // Sync bottom dock LGE button highlight
             const dockLge = document.getElementById('dock-site-LGE');
             if (dockLge) {
                 dockLge.className = view === 'lge'
@@ -1173,7 +1304,7 @@
             document.getElementById('modal-teacher').classList.add('hidden');
         };
 
-        window.saveTeacher = function(e) {
+        window.saveTeacher = async function(e) {
             e.preventDefault();
             const id = document.getElementById('teacher-id').value;
             const name = document.getElementById('teacher-name').value.trim();
@@ -1200,7 +1331,7 @@
                 });
             }
 
-            persistData();
+            await persistData();
             window.closeTeacherModal();
             window.renderPrepDashboard();
             window.renderLgeDirectory();
@@ -1221,10 +1352,10 @@
             document.getElementById('modal-delete').classList.add('hidden');
         };
 
-        window.confirmDeleteTeacher = function() {
+        window.confirmDeleteTeacher = async function() {
             if (!window.teacherToDeleteId) return;
             window.teachers = window.teachers.filter(t => t.id !== window.teacherToDeleteId);
-            persistData();
+            await persistData();
             window.closeDeleteModal();
             window.renderPrepDashboard();
             window.renderLgeDirectory();
@@ -1286,7 +1417,7 @@
             }
 
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
                 if (lines.length < 2) {
                     window.showToast('CSV file appears empty');
@@ -1338,7 +1469,7 @@
                     window.teachers = window.teachers.concat(imported);
                 }
 
-                persistData();
+                await persistData();
                 fileInput.value = '';
                 window.closeCsvModal();
                 window.renderLgeDirectory();
@@ -1431,7 +1562,7 @@
             document.getElementById('modal-period').classList.add('hidden');
         };
 
-        window.savePeriod = function(e) {
+        window.savePeriod = async function(e) {
             e.preventDefault();
             const site = window.scheduleSchoolTab;
             const dayKey = document.getElementById('period-day-type').value;
@@ -1450,20 +1581,20 @@
                 window.schedules[site][dayKey].push(newPeriod);
             }
 
-            persistData();
+            await persistData();
             window.closePeriodModal();
             window.renderSchedules();
             window.renderPrepDashboard();
             window.showToast('Schedule updated');
         };
 
-        window.deletePeriod = function() {
+        window.deletePeriod = async function() {
             const site = window.scheduleSchoolTab;
             const dayKey = document.getElementById('period-day-type').value;
             const index = parseInt(document.getElementById('period-index').value, 10);
             if (index >= 0) {
                 window.schedules[site][dayKey].splice(index, 1);
-                persistData();
+                await persistData();
                 window.closePeriodModal();
                 window.renderSchedules();
                 window.renderPrepDashboard();
@@ -1471,16 +1602,18 @@
             }
         };
 
-        window.resetSiteSchedules = function() {
+        window.resetSiteSchedules = async function() {
             const site = window.scheduleSchoolTab;
             window.schedules[site] = JSON.parse(JSON.stringify(DEFAULT_SCHEDULES[site]));
-            persistData();
+            await persistData();
             window.renderSchedules();
             window.renderPrepDashboard();
             window.showToast(`Restored default ${site} bell schedule`);
         };
 
         window.openSyncModal = function() {
+            const modalCount = document.getElementById('modal-teacher-count');
+            if (modalCount) modalCount.innerText = window.teachers.length;
             document.getElementById('modal-sync').classList.remove('hidden');
         };
 
@@ -1489,13 +1622,9 @@
         };
 
         // --- INITIALIZATION ---
-        loadSavedState();
-        document.getElementById('total-teacher-count').innerText = window.teachers.length;
         updateClockDisplay();
-        window.renderPrepDashboard();
-        window.renderLgeDirectory();
-        window.renderRosterList();
-        window.renderSchedules();
+        refreshAllViews();
+        loadSavedState();
 
         setInterval(() => {
             updateClockDisplay();
